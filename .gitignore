@@ -39,5 +39,7 @@ out/
 ### Kotlin ###
 .kotlin
 
-### Local DB ###
+### Local data ###
 data/
+pg_data/
+minio_data/
