@@ -5,6 +5,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
+import no.metatrack.server.feature.ontology.Ontology
 import java.time.Instant
 import java.util.UUID
 
@@ -16,4 +18,6 @@ data class Project(
     val description: String? = null,
     val createdOn: Instant,
     val lastUpdatedOn: Instant,
+    @OneToMany(mappedBy = "project")
+    val ontologies: MutableSet<Ontology> = mutableSetOf(),
 )
