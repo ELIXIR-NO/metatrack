@@ -11,3 +11,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+minio:
+  url: http://localhost:9000
+  accessKey: admin
+  secretKey: Password123

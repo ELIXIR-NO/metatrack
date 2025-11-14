@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
 @RestController
@@ -92,6 +94,15 @@ class SampleController(
         @PathVariable projectId: String,
     ): ResponseEntity<Unit> {
         sampleService.deleteSample(sampleId)
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/upload-sample-sheet")
+    fun uploadSampleSheet(
+        @RequestParam("file") file: MultipartFile,
+        @PathVariable projectId: UUID,
+    ): ResponseEntity<Unit> {
+        sampleService.uploadSampleSheet(projectId, file)
         return ResponseEntity.noContent().build()
     }
 }

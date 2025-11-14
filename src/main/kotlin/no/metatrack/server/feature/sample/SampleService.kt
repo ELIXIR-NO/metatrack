@@ -1,8 +1,13 @@
 package no.metatrack.server.feature.sample
 
+import io.minio.GetObjectArgs
+import io.minio.MinioClient
+import no.metatrack.server.feature.file.CsvFileProcessor
+import no.metatrack.server.feature.file.FileService
 import no.metatrack.server.feature.project.ProjectRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -11,6 +16,9 @@ import java.util.UUID
 class SampleService(
     private val sampleRepository: SampleRepository,
     private val projectRepository: ProjectRepository,
+    private val fileService: FileService,
+    private val minioClient: MinioClient,
+    private val csvFileProcessor: CsvFileProcessor,
 ) {
     fun getAllSamplesInProject(projectId: UUID): List<Sample> = sampleRepository.findAllByProjectId(projectId)
 
@@ -91,5 +99,34 @@ class SampleService(
             throw NoSuchElementException("No sample found with id $id")
         }
         sampleRepository.deleteById(id)
+    }
+
+    fun uploadSampleSheet(
+        projectId: UUID,
+        file: MultipartFile,
+    ) {
+        val project =
+            projectRepository.findById(projectId)
+
+        // TODO(): preserve this in db
+        val fileId = UUID.randomUUID().toString()
+
+        fileService.uploadFile(
+            project.get().name,
+            fileId,
+            file.inputStream,
+            file.contentType ?: "text/csv",
+        )
+
+        val inputStream =
+            minioClient.getObject(
+                GetObjectArgs
+                    .builder()
+                    .bucket(project.get().name)
+                    .`object`(fileId)
+                    .build(),
+            )
+
+        csvFileProcessor.ingestCSVSampleSheet(projectId, inputStream)
     }
 }
