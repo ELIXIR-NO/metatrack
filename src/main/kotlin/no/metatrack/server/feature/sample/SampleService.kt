@@ -105,15 +105,15 @@ class SampleService(
         projectId: UUID,
         file: MultipartFile,
     ) {
-        val project =
-            projectRepository.findById(projectId)
+        projectRepository.findById(projectId)
 
         // TODO(): preserve this in db
         val fileId = UUID.randomUUID().toString()
+        val fileName = file.originalFilename ?: "sample_sheet_$fileId.csv"
 
         fileService.uploadFile(
-            project.get().name,
-            fileId,
+            projectId.toString(),
+            fileName,
             file.inputStream,
             file.contentType ?: "text/csv",
         )
@@ -122,8 +122,8 @@ class SampleService(
             minioClient.getObject(
                 GetObjectArgs
                     .builder()
-                    .bucket(project.get().name)
-                    .`object`(fileId)
+                    .bucket(projectId.toString())
+                    .`object`(fileName)
                     .build(),
             )
 
