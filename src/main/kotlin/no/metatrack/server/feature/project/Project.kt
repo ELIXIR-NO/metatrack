@@ -1,5 +1,6 @@
 package no.metatrack.server.feature.project
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
@@ -18,6 +19,10 @@ data class Project(
     val description: String? = null,
     val createdOn: Instant,
     val lastUpdatedOn: Instant,
-    @OneToMany(mappedBy = "project")
-    val ontologies: MutableSet<Ontology> = mutableSetOf(),
+    @OneToMany(
+        mappedBy = "project",
+        cascade = [CascadeType.ALL],
+    ) val ontologies: MutableSet<Ontology> = mutableSetOf(),
+    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val members: MutableSet<ProjectMember> = mutableSetOf(),
 )

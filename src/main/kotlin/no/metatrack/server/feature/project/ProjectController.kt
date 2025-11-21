@@ -1,7 +1,11 @@
 package no.metatrack.server.feature.project
 
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.Authentication
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -43,12 +47,20 @@ class ProjectController(
     @PostMapping
     fun createNewProject(
         @Valid @RequestBody request: CreateProjectDTO,
+        authentication: Authentication,
     ): ResponseEntity<ProjectDTO> {
-        val project = projectService.createNewProject(request.name, request.description)
+        val jwt =
+            authentication.principal as? Jwt
+                ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+
+        val userId = jwt.subject
+
+        val project = projectService.createNewProject(userId, request.name, request.description)
         return ResponseEntity.ok(ProjectDTO(project))
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasPermission(#id, T(no.metatrack.server.feature.project.ProjectRole).EDITOR)")
     fun updateProject(
         @PathVariable id: UUID,
         @Valid @RequestBody request: UpdateProjectDTO,
@@ -58,6 +70,7 @@ class ProjectController(
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasPermission(#id, T(no.metatrack.server.feature.project.ProjectRole).OWNER)")
     fun deleteProject(
         @PathVariable id: UUID,
     ): ResponseEntity<Unit> {
