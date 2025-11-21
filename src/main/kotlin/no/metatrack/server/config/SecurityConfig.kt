@@ -1,7 +1,10 @@
 package no.metatrack.server.config
 
+import no.metatrack.server.feature.auth.CustomProjectPermissionEvaluator
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -38,5 +41,12 @@ class SecurityConfig {
         }
 
         return http.build()
+    }
+
+    @Bean
+    fun methodSecurityExpressionHandler(customEvaluator: CustomProjectPermissionEvaluator): MethodSecurityExpressionHandler {
+        val expressionHandler = DefaultMethodSecurityExpressionHandler()
+        expressionHandler.setPermissionEvaluator(customEvaluator)
+        return expressionHandler
     }
 }

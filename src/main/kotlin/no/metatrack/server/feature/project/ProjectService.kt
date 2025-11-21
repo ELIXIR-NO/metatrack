@@ -1,12 +1,14 @@
 package no.metatrack.server.feature.project
 
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.util.UUID
 
 @Service
 class ProjectService(
     private val projectRepository: ProjectRepository,
+    private val projectMemberRepository: ProjectMemberRepository,
 ) {
     fun getAllProjects(): List<Project> = projectRepository.findAll()
 
@@ -14,18 +16,32 @@ class ProjectService(
 
     fun getProjectByName(name: String): Project? = projectRepository.findByName(name).orElse(null)
 
+    @Transactional
     fun createNewProject(
+        userId: String,
         name: String,
         description: String?,
-    ): Project =
-        projectRepository.save(
-            Project(
-                name = name,
-                description = description,
-                createdOn = Instant.now(),
-                lastUpdatedOn = Instant.now(),
+    ): Project {
+        val project =
+            projectRepository.save(
+                Project(
+                    name = name,
+                    description = description,
+                    createdOn = Instant.now(),
+                    lastUpdatedOn = Instant.now(),
+                ),
+            )
+
+        projectMemberRepository.save(
+            ProjectMember(
+                userId = userId,
+                role = ProjectRole.OWNER,
+                project = project,
             ),
         )
+
+        return project
+    }
 
     fun updateProject(
         id: UUID,
@@ -43,10 +59,12 @@ class ProjectService(
         )
     }
 
+    @Transactional
     fun deleteProject(id: UUID) {
         if (!projectRepository.existsById(id)) {
             throw NoSuchElementException("No project found with id $id")
         }
+        projectMemberRepository.deleteByProjectId(id)
         projectRepository.deleteById(id)
     }
 }
