@@ -1,15 +1,15 @@
 package no.metatrack.server.feature.file
 
-import io.minio.BucketExistsArgs
-import io.minio.MakeBucketArgs
 import io.minio.MinioClient
 import io.minio.PutObjectArgs
+import no.metatrack.server.helper.MinioHelperService
 import org.springframework.stereotype.Service
 import java.io.InputStream
 
 @Service
 class FileService(
     private val minioClient: MinioClient,
+    private val minioHelperService: MinioHelperService,
 ) {
     fun uploadFile(
         bucketName: String,
@@ -17,11 +17,7 @@ class FileService(
         fileStream: InputStream,
         contentType: String,
     ) {
-        val exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())
-
-        if (!exists) {
-            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build())
-        }
+        minioHelperService.ensureBucketExists(bucketName)
 
         minioClient.putObject(
             PutObjectArgs
