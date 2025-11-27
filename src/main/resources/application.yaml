@@ -21,3 +21,5 @@ minio:
   url: http://localhost:9000
   accessKey: admin
   secretKey: Password123
+  webhook:
+    secret-key: some-secret-key

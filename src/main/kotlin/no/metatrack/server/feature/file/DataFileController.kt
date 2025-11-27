@@ -29,7 +29,6 @@ class DataFileController(
     }
 
     @PutMapping("/put")
-    @PreAuthorize("hasPermission(#projectId, T(no.metatrack.server.feature.project.ProjectRole).EDITOR)")
     fun getPresignedPutUrl(
         @PathVariable("projectId") projectId: UUID,
         @Valid @RequestBody request: FileDataRequestDTO,

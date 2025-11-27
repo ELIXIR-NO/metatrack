@@ -15,7 +15,9 @@ import org.springframework.security.web.SecurityFilterChain
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
-class SecurityConfig {
+class SecurityConfig(
+    private val props: MinioProperties,
+) {
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http {
@@ -28,6 +30,7 @@ class SecurityConfig {
                 authorize("/webjars/**", permitAll)
                 authorize("/favicon.ico", permitAll)
                 authorize("/error", permitAll)
+                authorize("/minio-webhook/**", permitAll) // not for prod
 
                 authorize(anyRequest, authenticated)
             }
